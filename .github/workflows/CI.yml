@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-18.04, windows-latest, macos-latest ]
+        os: [ ubuntu-18.04, windows-latest, macos-10.15 ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -31,9 +31,6 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: 3.9.7
-
-      - uses: kenchan0130/actions-system-info@master
-        id: system-info
 
       - name: Declare some variables
         id: vars
@@ -49,7 +46,7 @@ jobs:
 
       - name: get version
         id: version
-        run: echo "##[set-output name=version;]$(python main.py --version | cut -d ' ' -f3 | awk '$1=$1')"
+        run: echo "##[set-output name=version;]$(python aliyunpan.py --version | cut -d ' ' -f3 | awk '$1=$1')"
 
       - name: set tag name
         id: tag
@@ -60,7 +57,7 @@ jobs:
         run: echo "##[set-output name=name;]$(echo aliyunpan-cli-${{ runner.os }}-$(arch)-${{ steps.tag.outputs.name }})"
 
       - name: run pyinstaller
-        run: pyinstaller -F main.py -n aliyunpan-cli
+        run: pyinstaller -F aliyunpan/main.py -n aliyunpan-cli
 
       - run: |
           chmod +x dist/*
@@ -84,6 +81,11 @@ jobs:
           release_name: aliyunpan-cli-${{ steps.tag.outputs.name }}
           draft: false
           prerelease: false
+
+      - name: Sleep for 10s
+        uses: juliangruber/sleep-action@v1
+        with:
+          time: 10s
 
       - name: Gets latest created release info
         id: latest_release_info

@@ -150,9 +150,9 @@ class PathList:
         return [i.data for i in self._tree.children(file_id)]
 
     def get_path_fid(self, path, file_id='root', update=True):
-        path = AliyunpanPath(path)
         if str(path) in ('', '/', '\\', '.', 'root'):
             return 'root'
+        path = AliyunpanPath(path)
         flag = False
         path_list = list(filter(None, path.split()))
         if path_list[0] == 'root':
@@ -212,12 +212,13 @@ def parse_share_url(url, access_token):
 
 class AliyunpanPath(type(Path())):
     def __str__(self):
-        path = [i for i in str(PurePosixPath(Path(super().__str__()).as_posix())).split('/') if i != '']
+        p = super().__str__()
+        path = [i for i in str(PurePosixPath(Path(p).as_posix())).split('/') if i != '']
         if not path:
             path = ['root']
         if len(path) != 1 and path[0] == 'root':
             path = path[1:]
-        path = '/'.join(path)
+        path = ('/' if p[0] in ['/', '\\'] else '') + '/'.join(path)
         return path
 
     def split(self):
@@ -246,3 +247,9 @@ class AliyunpanPath(type(Path())):
 
     def __add__(self, other):
         return Path(self.__str__()) / Path(str(other))
+
+    @property
+    def parent(self):
+        p = self.__str__()
+        p_ = p.rsplit('/', 1)[0]
+        return 'root' if p_ == p else p_
